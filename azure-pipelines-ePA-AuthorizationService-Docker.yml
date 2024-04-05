@@ -46,20 +46,7 @@ stages:
           echo BuildNumber : $(Build.BuildNumber)
           echo '##vso[build.updatebuildnumber]$(Version.Major).$(Version.Minor).$(Version.Patch).$(Version.Revision).$(Build.BuildNumber)
 
-- stage: EPA_AuthorizationService_DOCKER
-  displayName: 'Create Docker Image - ePA AuthorizationService'
-#  pool:
-#   name: EPA
-  dependsOn: Version
-  jobs:
-  - job: AuthorizationService
-    timeoutInMinutes: 0
-    displayName: 'AuthorizationService'
-    steps:
 
-    - checkout: self
-      clean: true
-      persistCredentials: true
       
 
  
