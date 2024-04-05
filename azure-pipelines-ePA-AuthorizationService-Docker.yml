@@ -1,0 +1,65 @@
+# specific path build
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - 'components/AuthorizationService'
+    - 'components/CommonLibraries'
+    
+variables:
+- template: ./variables-binary-ePA-AuthorizationService.yml
+- group: ADO-Secrets
+- group: PG-EPA-Global-Variables
+
+pool:
+  name: 'EPA'
+
+resources:
+  repositories:
+    - repository: TEMPLATE_REPOSITORY
+      name: mygainwell/ado-templates
+      type: GitHub
+      connection: mygainwell
+      endpoint: mygainwell
+      ref: 'refs/heads/pradheep-ci-msbuild'
+
+    - repository: SOURCE_REPOSITORY
+      name: mygainwell/pharm-pbm-epa
+      type: GitHub
+      connection: mygainwell
+      endpoint: mygainwell
+      ref: 'refs/heads/main'
+
+
+stages:
+
+- stage: Version
+  displayName: 'Set Version Number'
+  jobs:
+  - job:
+    displayName: 'Update Version'
+    steps:
+      - checkout: none
+      - script: |
+          echo BuildNumber : $(Build.BuildNumber)
+          echo '##vso[build.updatebuildnumber]$(Version.Major).$(Version.Minor).$(Version.Patch).$(Version.Revision).$(Build.BuildNumber)
+
+- stage: EPA_AuthorizationService_DOCKER
+  displayName: 'Create Docker Image - ePA AuthorizationService'
+#  pool:
+#   name: EPA
+  dependsOn: Version
+  jobs:
+  - job: AuthorizationService
+    timeoutInMinutes: 0
+    displayName: 'AuthorizationService'
+    steps:
+
+    - checkout: self
+      clean: true
+      persistCredentials: true
+      
+
+ 
