@@ -1,0 +1,66 @@
+# File: variables.yml
+variables: 
+  Project.Name: 'EPA'
+  Application.Name: 'AuthorizationService'
+  Agent.PoolName: 'EPA-STATICANALYSIS'
+  Agent.PoolNameSchedule: 'EPA-STATICANALYSIS'
+  GitHub.Repository: 'pharm-pbm-epa'
+  GitHub.TemplateRepository: 'ado-templates'
+  Version.Major: 1
+  Version.Minor: 1
+  Version.Patch: 2
+  Version.Revision: 0
+  Solution.Path: 'components\AuthorizationService'
+  Solution.Name: 'AuthorizationServices.sln'
+  Nuget.File: $(System.DefaultWorkingDirectory)/components/nuget.config
+  # Build Types: GRADLE | ANGULAR | HADOOP | INFORMATICA | DOTNET
+  Build.Type: 'DOTNET'
+  Build.Component: 'WS'
+  Build.OutputDir: $(System.DefaultWorkingDirectory)/build/output
+  Build.SQOutputDir: $(System.DefaultWorkingDirectory)/build/sqbin
+  Build.Script: |
+    echo Compiling $(Solution.Path)\$(Solution.Name)
+    set slnPath="$(System.DefaultWorkingDirectory)\$(Solution.Path)\$(Solution.Name)"
+    
+    SET vstest="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe"
+ 
+    cd "$(System.DefaultWorkingDirectory)"
+    dotnet publish %slnPath% /maxcpucount:1 /p:Configuration=Release /p:Platform="Any CPU" -o "$(Build.OutputDir)\AuthorizationService"
+    
+    if errorlevel 1 exit 1
+    
+    rem echo %vstest% "$(Build.OutputDir)\AuthorizationService\*.Tests.dll" /platform:"X64" --testcasefilter:TestCategory!=IgnoreOnBuild --Logger:trx;encoding=UTF-8 --ResultsDirectory:$(System.DefaultWorkingDirectory)\TestResults
+    rem %vstest% "$(Build.OutputDir)\AuthorizationService\*.Tests.dll" /platform:"X64" --testcasefilter:TestCategory!=IgnoreOnBuild --Logger:trx;encoding=UTF-8 --ResultsDirectory:$(System.DefaultWorkingDirectory)\TestResults
+
+    if errorlevel 1 exit 1
+  
+  Build.SQScript: |
+    echo Compiling $(Solution.Path)\$(Solution.Name)
+    set slnPath="$(System.DefaultWorkingDirectory)\$(Solution.Path)\$(Solution.Name)"
+    
+    cd "$(System.DefaultWorkingDirectory)"
+    dotnet publish %slnPath% /maxcpucount:1 /p:Configuration=Debug /p:Platform="Any CPU" -o "$(Build.OutputDir)\AuthorizationService"
+    
+    md $(System.DefaultWorkingDirectory)\build\sqbin
+    SET DEST=$(System.DefaultWorkingDirectory)\build\sqbin
+    cd $(System.DefaultWorkingDirectory)\build\output
+    for /r %%a in (*.*) do (
+        COPY "%%a" "%DEST%/%%~nxa"
+    )
+    
+    if errorlevel 1 exit 1
+
+  Artifact.Location: $(System.ArtifactsDirectory)
+  Copy.FlattenFolders: false
+  Artifact.Name: |
+    **\*.*
+    !**\_PublishedWebsites\**
+  JFrog.ServiceConnection: 'https://gwproductengineering.jfrog.io/artifactory'
+  JFrog.Repository: 'pharm-pbm-epa-generic-dev'
+  JFrog.Properties: ''
+  SonarQube.ScanMode: 'MSBUILD'
+  SonarQube.ServiceConnection: 'GWTSQ'
+  SonarQube.ProjectKey: 'pharm-pbm-epa-authservice'
+  SonarQube.ProjectName: 'pharm-pbm-epa-authservice'
+  VeraCode.ServiceConnection: 'Veracode Connection'
+  VeraCode.ApplicationProfile: 'pharm-pbm-epa-main'
